@@ -1,0 +1,1 @@
+(dyn Fn(std::string::String, Value) + Send + Sync + 'static)

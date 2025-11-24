@@ -1,0 +1,1 @@
+(dyn for<'a, 'b> Fn(u16, &'a HashMap<std::string::String, std::string::String>, &'b Value) -> Value + Send + Sync + 'static)

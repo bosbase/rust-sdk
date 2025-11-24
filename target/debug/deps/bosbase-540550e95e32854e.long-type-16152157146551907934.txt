@@ -1,0 +1,1 @@
+(dyn for<'a, 'b> Fn(&'a mut std::string::String, &'b mut SendOptions) + Send + Sync + 'static)

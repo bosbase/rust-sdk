@@ -1,0 +1,3 @@
+alloc::sync::ArcInner<dyn Fn(std::string::String, Value) + Send + Sync>
+PhantomData<alloc::sync::ArcInner<dyn Fn(std::string::String, Value) + Send + Sync>>
+&Arc<dyn Fn(std::string::String, Value) + Send + Sync>

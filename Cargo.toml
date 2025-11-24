@@ -1,0 +1,23 @@
+[package]
+name = "bosbase"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Rust SDK for the BosBase API, mirroring the JavaScript SDK"
+homepage = "https://docs.bosbase.com/docs"
+repository = "https://github.com/bosbase"
+
+[dependencies]
+base64 = "0.21"
+chrono = { version = "0.4", features = ["serde"] }
+parking_lot = "0.12"
+reqwest = { version = "0.11", features = ["blocking", "json", "multipart", "rustls-tls", "gzip", "brotli", "deflate"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tungstenite = { version = "0.21", default-features = false, features = ["rustls-tls-native-roots", "handshake"] }
+url = "2"
+urlencoding = "2"
+
+[dev-dependencies]
+serde_json = "1"
