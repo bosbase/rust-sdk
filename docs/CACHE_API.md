@@ -2,7 +2,7 @@
 
 ## Overview
 
-BosBase caches combine in-memory [FreeCache](https://github.com/coocood/freecache) storage with persistent database copies. Each cache instance is safe to use in single-node or multi-node (cluster) mode: nodes read from FreeCache first, fall back to the database if an item is missing or expired, and then reload FreeCache automatically.
+BosBase caches combine in-memory storage with persistent database copies. Each cache instance is safe to use in single-node or multi-node (cluster) mode: nodes read from first, fall back to the database if an item is missing or expired, and then reload automatically.
 
 The Rust SDK exposes the cache endpoints through `pb.caches`. Typical use cases include:
 
@@ -109,7 +109,7 @@ Field reference:
 
 | Field | Description |
 |-------|-------------|
-| `sizeBytes` | Approximate FreeCache size. Values too small (<512KB) or too large (>512MB) are clamped. |
+| `sizeBytes` | Approximate size. Values too small (<512KB) or too large (>512MB) are clamped. |
 | `defaultTTLSeconds` | Default expiration for entries. `0` means no expiration. |
 | `readTimeoutMs` | Optional lock timeout while reading FreeCache. When exceeded, the value is fetched from the database instead. |
 
@@ -166,8 +166,8 @@ pb.caches.delete_entry(
 
 ### Cluster-aware behaviour
 
-1. **Write-through persistence** – every `setEntry` writes to FreeCache and the `_cache_entries` table so other nodes (or a restarted node) can immediately reload values.
-2. **Read path** – FreeCache is consulted first. If a lock cannot be acquired within `readTimeoutMs` or if the entry is missing/expired, BosBase queries the database copy and repopulates FreeCache in the background.
+1. **Write-through persistence** – every `setEntry` writes to and the `_cache_entries` table so other nodes (or a restarted node) can immediately reload values.
+2. **Read path** – is consulted first. If a lock cannot be acquired within `readTimeoutMs` or if the entry is missing/expired, BosBase queries the database copy and repopulates in the background.
 3. **Automatic cleanup** – expired entries are ignored and removed from the database when fetched, preventing stale data across nodes.
 
 Use caches whenever you need fast, transient data that must still be recoverable or shareable across BosBase nodes.
