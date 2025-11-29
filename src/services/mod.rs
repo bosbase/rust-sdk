@@ -13,6 +13,7 @@ pub mod log;
 pub mod pubsub;
 pub mod realtime;
 pub mod record;
+pub mod sql;
 pub mod settings;
 pub mod vector;
 
@@ -31,5 +32,6 @@ pub use log::LogService;
 pub use pubsub::{PubSubMessage, PubSubService};
 pub use realtime::RealtimeService;
 pub use record::RecordService;
+pub use sql::SQLService;
 pub use settings::SettingsService;
 pub use vector::VectorService;

@@ -6,7 +6,7 @@ This crate mirrors the JavaScript SDK so Rust applications can talk to the BosBa
 ## Status
 
 - HTTP client with `before_send`/`after_send` hooks, auth store, filter builder, multipart uploads.
-- Services: collections, records (auth helpers, OTP/MFA/OAuth2, impersonation), files, backups, batch writes, cache, cron, logs, settings, GraphQL, vectors, LLM documents, LangChaingo, realtime (SSE), and pubsub (websocket).
+- Services: collections, records (auth helpers, OTP/MFA/OAuth2, impersonation), files, backups, batch writes, cache, cron, logs, settings, GraphQL, SQL execute, vectors, LLM documents, LangChaingo, realtime (SSE), and pubsub (websocket).
 - Realtime subscriptions and pubsub reconnect automatically and reuse the same auth token when available.
 
 ## Usage
@@ -37,11 +37,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get_list(1, 10, false, Default::default(), Default::default(), None, None, None, None)?;
     println!("posts: {:?}", posts);
 
-    // create a record
-    let created = pb
-        .collection("posts")
-        .create(json!({"title": "Hello"}), Default::default(), vec![], Default::default(), None, None)?;
-    println!("created: {:?}", created);
+// create a record
+let created = pb
+    .collection("posts")
+    .create(json!({"title": "Hello"}), Default::default(), vec![], Default::default(), None, None)?;
+println!("created: {:?}", created);
+
+// run a superuser SQL statement (mirrors the JS SDK SQLService)
+let sql = pb.sql.execute("SELECT id, title FROM posts LIMIT 5", Default::default(), Default::default())?;
+println!("sql rows: {:?}", sql);
 
     Ok(())
 }

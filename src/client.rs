@@ -4,9 +4,9 @@ use crate::request::{AfterSendHook, BeforeSendHook, SendOptions};
 use crate::services::{
     BackupService, BatchService, CacheService, CollectionService, CronService, FileService,
     GraphQLService, HealthService, LangChaingoService, LLMDocumentService, LogService,
-    PubSubService, RealtimeService, RecordService, SettingsService, VectorService,
+    PubSubService, RealtimeService, RecordService, SQLService, SettingsService, VectorService,
 };
-use crate::utils::build_relative_url;
+use crate::utils::{build_query, build_relative_url, normalize_query};
 use chrono::DateTime;
 use parking_lot::Mutex;
 use reqwest::blocking::Client as HttpClient;
@@ -42,10 +42,27 @@ impl BosBaseInner {
     }
 
     pub fn send(&self, path: &str, mut options: SendOptions) -> Result<Value, ClientResponseError> {
-        let mut url = self.build_url(path, &options.query);
+        let mut url = self.build_url(path, &HashMap::new());
 
         if let Some(hook) = &*self.before_send.lock() {
             hook(&mut url, &mut options);
+        }
+
+        if !options.query.is_empty() {
+            let qs = build_query(&normalize_query(&options.query));
+            if !qs.is_empty() {
+                if url.contains('?') {
+                    if !url.ends_with('?') && !url.ends_with('&') {
+                        url.push('&');
+                    }
+                } else {
+                    url.push('?');
+                }
+                url.push_str(&qs);
+            }
+        }
+
+        if url.is_empty() {
             url = self.build_url(path, &options.query);
         }
 
@@ -123,6 +140,10 @@ impl BosBaseInner {
         let mut data: Value =
             serde_json::from_slice(&bytes).unwrap_or_else(|_| Value::String(String::from_utf8_lossy(&bytes).to_string()));
 
+        if let Some(after) = &*self.after_send.lock() {
+            data = after(status_code, &headers_out, &data);
+        }
+
         if status.is_client_error() || status.is_server_error() {
             return Err(ClientResponseError::new(
                 url,
@@ -131,10 +152,6 @@ impl BosBaseInner {
                 false,
                 None,
             ));
-        }
-
-        if let Some(after) = &*self.after_send.lock() {
-            data = after(status_code, &headers_out, &data);
         }
         Ok(data)
     }
@@ -191,6 +208,7 @@ pub struct BosBase {
     pub llm_documents: LLMDocumentService,
     pub caches: CacheService,
     pub graphql: GraphQLService,
+    pub sql: SQLService,
 }
 
 impl BosBase {
@@ -245,6 +263,7 @@ impl BosBase {
             llm_documents: LLMDocumentService::new(inner.clone()),
             caches: CacheService::new(inner.clone()),
             graphql: GraphQLService::new(inner.clone()),
+            sql: SQLService::new(inner.clone()),
         }
     }
 
